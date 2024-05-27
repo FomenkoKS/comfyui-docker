@@ -1,0 +1,44 @@
+services:
+  comfyui:
+    container_name: comfyui-ubuntu
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8188"
+    volumes:
+      - ./files:/app
+    tty:
+      true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu]
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - 11435:11434
+    volumes:
+      - ./ollama/ollama:/root/.ollama
+      - ./start-ollama.sh:/start-ollama.sh
+    container_name: ollama
+    restart: always
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: [ "CMD", "pgrep", "-f", "ollama" ]
+      interval: 30s
+      retries: 10
+      start_period: 120s
+      timeout: 10s
+    entrypoint: /bin/sh
+    command: /start-ollama.sh
