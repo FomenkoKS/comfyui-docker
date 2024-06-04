@@ -10,6 +10,8 @@ services:
       - ./files:/app
     tty:
       true
+    restart:
+      always
     deploy:
       resources:
         reservations:
